@@ -1,0 +1,97 @@
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        .jumbotron {
+            background-color: #f4511e;
+            color: #fff;
+            padding: 100px 25px;
+        }
+        .container-fluid {
+            padding: 60px 50px;
+        }
+        .bg-grey {
+            background-color: #f6f6f6;
+        }
+        .logo-small {
+            color: #f4511e;
+            font-size: 50px;
+        }
+        .logo {
+            color: #f4511e;
+            font-size: 200px;
+        }
+        @media screen and (max-width: 768px) {
+            .col-sm-4 {
+                text-align: center;
+                margin: 25px 0;
+            }
+        }
+        #cursor_hand{
+            position:fixed;
+            top:0;
+            left:0;
+            background-image: url("images/handcursor.png");
+            height:160px;
+            width:160px;
+
+        }
+    </style>
+    <script>
+        var socket = new WebSocket('ws://' + window.location.host + '/analytics-endpoint');
+        // Add an event listener for when a connection is open
+        socket.onopen = function() {
+            console.log('Analytics WebSocket connection opened. Ready to send events.');
+        };
+        $("*").mousemove(function(values) {
+            console.log("elements to be mouse moved up");
+            console.log(values);
+            new_x = (event.pageX / screen.width);
+            new_y = (event.pageY / screen.height);
+            console.log(new_x, new_y);
+            socket.send(new_x + "," + new_y);
+            $("#cursor_hand").css({ left: new_x, top: new_y });
+        });
+    </script>
+</head>
+<body>
+<h1>
+    Вы в личном кабинете
+</h1>
+    <div>
+        <form action="/logout" method="post">
+            <input type="hidden" name="_csrf" value="{{_csrf.token}}" />
+            <input type="submit" value="Выйти"/>
+        </form>
+    </div>
+    <div>
+        Логин пользователя: {{cred}}
+    </div>
+
+    <div>
+        <form method="post">
+            <input type="text" name="text" placeholder="Введите сообщение" />
+            <input type="text" name="tag" placeholder="Тэг">
+            <input type="hidden" name="_csrf" value="{{_csrf.token}}" />
+            <button type="submit">Добавить</button>
+        </form>
+    </div>
+    <div>Список сообщений</div>
+    <form method="post" action="filter">
+        <input type="text" name="filter">
+        <input type="hidden" name="_csrf" value="{{_csrf.token}}" />
+        <button type="submit">Найти</button>
+    </form>
+
+
+    {{#messages}}
+    <div>
+        <b>{{id}}</b>
+        <span>{{text}}</span>
+        <i>{{tag}}</i>
+    </div>
+    {{/messages}}
+</body>
+</html>
